@@ -25,7 +25,7 @@ storm.io.set_mode(storm.io.OUTPUT, pin)
 local lamp_on_p = 0
 local strobe_on_p = 0
 local delays = {1000, 500, 250, 100, 50, 25, 10}
-local delay_index = 1
+delay_index = 1
 local n = #delays
 
 storm.io.set_mode(storm.io.OUTPUT, storm.io.D4)
@@ -39,57 +39,58 @@ function lamp_off ()
    storm.io.set(storm.io.LOW, pin)
 end
 
-
-
-function change_delay(milliseconds)
-   delay = storm.os.MILLISECOND*milliseconds
-   print(storm.os.SECOND/delay, "times per second")
+function change_delay_g(milliseconds)
+   delay_g = storm.os.MILLISECOND*milliseconds
+   print(storm.os.SECOND/delay_g, "times per second (global)")
 end
 
-delay = change_delay(delays[1])
- delay = change_delay(delays[1])
+change_delay = change_delay_g
+
+local delay_g
+
+change_delay(delays[1])
 
 local strobe
 local count = 0
+
+function x(n)
+   delay_index = n
+end
+
 function strobe_on ()
+   local delay = delay_g
+   function change_delay_l(milliseconds)
+      delay = storm.os.MILLISECOND*milliseconds
+      print(storm.os.SECOND/delay, "times per second (local)")
+   end
+   change_delay = change_delay_l
    strobe = cord.new(function ()
 			local c = count
 			count = count + 1
 			while true do
-			   print("strobe loop", c)
-			   storm.io.set(storm.io.HIGH, pin)
-			   print("a")
-			   print(delay)
-			   print("x")
-			   print("delay = ", delay/storm.os.MILLISECOND)
-			   print("\n")
+			   delay = delays[delay_index]*storm.os.MILLISECOND
 
-local strobe
-local count = 0
-function strobe_on ()
-   strobe = cord.new(function ()
-			local c = count
-			count = count + 1
-			while true do
-			   print("strobe loop", c)
+			   if not delay then
+			      delay = 500*storm.os.MILLISECOND
+			   end
 			   storm.io.set(storm.io.HIGH, pin)
-			   print("a")
-			   print(delay)
-			   print("x")
-			   print("delay = ", delay/storm.os.MILLISECOND)
-			   print("\n")
 			   cord.await(storm.os.invokeLater, delay)
-			   print("b")
 			   storm.io.set(storm.io.LOW, pin)
-			   print("c")
 			   cord.await(storm.os.invokeLater, delay)
-			   print("end")
 			end
 		     end)
+   print("strobe handle = ", strobe)
+   return change
 end
 
 function strobe_off ()
-   cord.cancel(strobe)
+   print("strobe_off()")
+   print("strobe = ", strobe)
+   if strobe then
+      cord.cancel(strobe)
+   end
+   change_delay = change_delay_g
+   print("end\n")
 end
 
 -- create echo server as handler
@@ -107,21 +108,21 @@ server = function()
 				     lamp_off()
 				     print("light off")
 				  elseif payload == "s1" then
-				     if stobe_on_p ~= 1 then
+				     print("strobe on")
+				     if strobe_on_p ~= 1 then
 					strobe_on()
-					stobe_on_p = 1
-					print("strobe on")
+					strobe_on_p = 1
 				     end
 				  elseif payload == "s0" then
+				     print("strobe off")
 				     if strobe_on_p ~= 0 then
 					strobe_off()
-					stobe_on_p = 0
+					strobe_on_p = 0
 					lamp_off()
-					print("strobe off")
 				     end
 				  elseif payload == "f" then
 				     delay_index = (delay_index % n) + 1
-				     change_delay(delays[delay_index])
+				     --change_delay(delays[delay_index])
 				     print("delay index = ", delay_index)
 				  else
 				     print("Err: invalid command:", payload)
