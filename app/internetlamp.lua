@@ -22,7 +22,9 @@ btn2 = Button:new("D10")	-- button 2 on starter shield
 btn3 = Button:new("D9")	-- button 3 on starter shield
 LED = require("led")
 green = LED:new("D2")
-
+ACK = 0 
+msg = l0 
+sendHandle = nil 
 local lamp_status = "l0"
 local strobing = "s0"
 
@@ -35,33 +37,63 @@ csock = storm.net.udpsocket(cport,
 				    lamp_status = payload
 				elseif payload == "s0" or payload == "s1" then
 				    strobing = payload
-				end		
+				end	
+				ACK = 1 
+				print("sendHandle:", sendHandle)
+				print(sendHandle ~= nil) 
+				if sendHandle ~= nil then
+					storm.os.cancel(sendHandle)
+			        	print('canceled handle')
+				else 
+					print('sendHandle not working')
+				end
+			        sendHandle = nil 
+
 				print("lamp_status: ",lamp_status)
 			    end)
 
 
 -- send echo on each button press
 
+sendMsg = function ()	
+	storm.net.sendto(csock, msg, "ff02::1", 7) 
+	print("send:", msg)
+end 
+
+
 toggleLamp = function()
-   local msg = "l0"
+   msg = "l0"
    if lamp_status == "l0"
    then msg = "l1"
    else msg = "l0"
    end
-   print("send:", msg)
+   --print("send:", msg)
+   ACK  = 0 
    -- send upd echo to link local all nodes multicast
-   storm.net.sendto(csock, msg, "ff02::1", 7) 
+  -- while(ACK == 0) do 
+	if sendHandle == nil then 
+		sendHandle = storm.os.invokePeriodically(100*storm.os.MILLISECOND, sendMsg) 
+	end   
+--      if ACK == 1 then 
+--		storm.os.cancel(sendHandle)
+--	end
+  -- end 
+   --storm.os.cancel(sendHandle)
+  -- storm.net.sendto(csock, msg, "ff02::1", 7) 
 end
 
 toggleStrobing = function()
-   local msg = "s0"
+    msg = "s0"
    if strobing == "s0"
    then msg = "s1"
    else msg = "s0"
    end
    print("send:", msg)
    -- send upd echo to link local all nodes multicast
-   storm.net.sendto(csock, msg, "ff02::1", 7) 
+	if sendHandle == nil then
+       		 sendHandle = storm.os.invokePeriodically(100*storm.os.MILLISECOND, sendMsg)
+        end   
+
 end
 
 -- button press runs client
@@ -75,9 +107,11 @@ btn2:whenever("RISING",function()
 		toggleStrobing() 
 		      end)
 
-btn3:whenever("RISING",function() 
+btn3:whenever("RISING",function()
+		msg = "f" 
 		print("Rotating freq")
-		storm.net.sendto(csock, "f", "ff02::1", 7) 
+		sendHandle = storm.os.invokePeriodically(100*storm.os.MILLISECOND, sendMsg)
+	
 		      end)
 
 
