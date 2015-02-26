@@ -11,7 +11,6 @@
 SVCD = {
     OK=1,
     TIMEOUT=2,
-    ivkid = 0,
     manifest_map = {},
     blsmap = {},
     blamap = {},
@@ -102,11 +101,7 @@ SVCD.wcdispatch = function(pay, srcip, srcport)
 end
 
 SVCD.write = function (targetip, svcid, attrid, payload, timeout_ms, on_done)
-    local ivkid = SVCD.ivkid
-    SVCD.ivkid = SVCD.ivkid + 1
-    if SVCD.ivkid > 65535 then
-        SVCD.ivkid = 0
-    end
+    local ivkid = SVCD_new_id()
     SVCD.handlers[ivkid] = on_done
     storm.os.invokeLater(timeout_ms*storm.os.MILLISECOND, function()
         if SVCD.handlers[ivkid] ~= nil then
@@ -190,15 +185,21 @@ end
 
 SVCD.subscribe = function(targetip, svcid, attrid, on_notify)
     local msg = storm.array.create(7,storm.array.UINT8)
-    local ivkid = SVCD.ivkid
-    SVCD.ivkid = SVCD.ivkid + 1
-    if SVCD.ivkid > 65535 then
-        SVCD.ivkid = 0
-    end
+    local ivkid = SVCD_new_id()
     SVCD.oursubs[ivkid] = on_notify
     msg:set(1, 1)
     msg:set_as(storm.array.UINT16, 1, svcid)
     msg:set_as(storm.array.UINT16, 3, attrid)
     msg:set_as(storm.array.UINT16, 5, ivkid)
     storm.net.sendto(SVCD.ncsock, msg:as_str(), targetip, 2530)
+end
+
+local ivkid = 0
+function SVCD_new_id()
+    local id = ivkid
+    ivkid = ivkid + 1
+    if ivkid > 65535 then
+        ivkid = 0
+    end
+    return ivkid
 end
