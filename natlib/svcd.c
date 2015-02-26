@@ -4,19 +4,18 @@
 
 int SVCD_subdispatch(lua_State L){
   //local parr = storm.array.fromstr(pay)
-  arr_from_str(L);
-  storm_array_t *parr = lua_touserdata(L, -1);
+  char *parr = lua_tostring(L, 1);
   int srcip = lua_tointeger(L, 2); //? what type is the ip?
   int strcport = lua_tointeger(L, 3);
 
   //local cmd = parr:get(1);
-  char cmd = array_get(parr, 1);
+  char cmd = parr[0];
   //local svc_id = parr:get_as(storm.array.UINT16,1);
-  int svc_id = array_get_as(parr, ARR_TYPE_UINT16, 1);
+  int svc_id = ((int16_t*)parr)[1];
   //local attr_id = parr:get_as(storm.array.UINT16,3);
-  int attr_id = array_get_as(parr, ARR_TYPE_UINT16 3);
+  int attr_id = ((int16_t*)parr)[3];
   //local ivkid = parr:get_as(storm.array.UINT16, 5);
-  int ivkid = array_get_as(parr, ARR_TYPE_UINT16, 5);
+  int ivkid = ((int16_t*)parr)[5];
 
   lua_getglobal(L, "SVCD");
   lua_pushstring(L, "subscribers");
