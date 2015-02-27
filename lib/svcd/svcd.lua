@@ -155,8 +155,6 @@ end
 
 SVCD.subdispatch = function(pay, srcip, srcport)
     local parr = storm.array.fromstr(pay)
-    print("array");
-    print(parr);
     local cmd = parr:get(1)
     local svc_id = parr:get_as(storm.array.UINT16,1)
     local attr_id = parr:get_as(storm.array.UINT16,3)

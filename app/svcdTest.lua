@@ -7,9 +7,9 @@ sh.start()
 require "svcd"
 require "pprint"
 
-SVCD.init("kavan", function() print("ready to go") end)
-SVCD.add_service(12)
-SVCD.add_attribute(12,1,function() print("someone wrote to attribute") end)
+storm.n.svcd_init("kavan", function() print("ready to go") end)
+-- SVCD.add_service(12)
+-- SVCD.add_attribute(12,1,function() print("someone wrote to attribute") end)
 
 -- enter the main event loop. This puts the processor to sleep
 -- in between events

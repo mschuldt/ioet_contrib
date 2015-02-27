@@ -1,15 +1,13 @@
 #include "libstormarray.h"
 #include "lrodefs.h"
 
+static int svcd_subdispatch(lua_State *L);
 
 //This file is included into native.c
 
-
 #define SVCD_SYMBOLS \
-    { LSTRKEY( "svcd_init"), LFUNCVAL ( svcd_init ) },
-    { LSTRKEY( "svcd_subdispatch"), LFUNCVAL ( SVCD_subdispatch ) },
-
-
+    { LSTRKEY( "svcd_init"), LFUNCVAL ( svcd_init ) }, \
+    { LSTRKEY( "svcd_subdispatch"), LFUNCVAL ( svcd_subdispatch ) }, 
 
 //If this file is defining only specific functions, or if it
 //is defining the whole thing
@@ -149,8 +147,7 @@ static int svcd_init( lua_State *L )
     lua_pushstring(L, "subsock");
     lua_pushlightfunction(L, libstorm_net_udpsocket);
     lua_pushnumber(L, 2530);
-    lua_pushstring(L, "subdispatch");
-    lua_gettable(L, 3);
+    lua_pushlightfunction(L, svcd_subdispatch);
     lua_call(L, 2, 1);
     lua_settable(L, 3); //Store
 
@@ -198,8 +195,7 @@ static int svcd_init( lua_State *L )
 // Maintainer: Running with scissors
 //////////////////////////////////////////////////////////////////////////////
 
-int SVCD_subdispatch(lua_State *L){
-  printf("running native\n");
+static int svcd_subdispatch(lua_State *L) {
   //local parr = storm.array.fromstr(pay)
   size_t len;
   char *parr = lua_tolstring(L, 1, &len);
