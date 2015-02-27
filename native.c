@@ -177,7 +177,8 @@ const LUA_REG_TYPE contrib_native_map[] =
     { LSTRKEY( "fourth_root"), LFUNCVAL ( contrib_fourth_root_m1000 ) },
     { LSTRKEY( "run_foobar"), LFUNCVAL ( contrib_run_foobar ) },
     { LSTRKEY( "makecounter"), LFUNCVAL ( contrib_makecounter ) },
-    { LSTRKEY( "subdispatch"), LFUNCVAL ( SVCD_subdispatch ) },
+
+    SVCD_SYMBOLS
 
     /* Constants for the Temp sensor. */
     // -- Register address --
