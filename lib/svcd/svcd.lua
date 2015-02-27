@@ -82,7 +82,7 @@ SVCD.init = function(id, onready)
    -- notification client socket
    SVCD.ncsock = storm.net.udpsocket(2529, SVCD.ncdispatch)
    -- subscription socket
-   SVCD.subsock = storm.net.udpsocket(2530, SVCD.subdispatch)
+   SVCD.subsock = storm.net.udpsocket(2530, storm.n.subdispatch)
    SVCD.manifest = {id=id }
    if id ~= nil then
        storm.os.invokePeriodically(3*storm.os.SECOND, function()
@@ -132,8 +132,31 @@ SVCD.add_attribute = function(svc_id, attr_id, write_fn)
     SVCD.manifest_map[svc_id][attr_id] = write_fn
 end
 
+SVCD.test_subdispatch = function()
+    SVCD.subscribers = {}
+    local msg = storm.array.create(7,storm.array.UINT8)
+    msg:set(1, 1)
+    msg:set_as(storm.array.UINT16, 1, svcid)
+    msg:set_as(storm.array.UINT16, 3, attrid)
+    msg:set_as(storm.array.UINT16, 5, ivkid)
+    SVCD.subdispatch(msg,"ff01::1",2343)
+    outputTable = SVCD.subscribers
+
+    SVCD.subscribers = {}
+    storm.n.subdispatch(msg,"ff01::1",2343)
+    nativeOutputTable = SVCD.subscribers
+
+    require "pprint"
+    print("\n lua:\n")
+    ppNestedTable(outputTable)
+    print("\n native:\n")
+    ppNestedTable(nativeOutputTable)
+end
+
 SVCD.subdispatch = function(pay, srcip, srcport)
     local parr = storm.array.fromstr(pay)
+    print("array");
+    print(parr);
     local cmd = parr:get(1)
     local svc_id = parr:get_as(storm.array.UINT16,1)
     local attr_id = parr:get_as(storm.array.UINT16,3)

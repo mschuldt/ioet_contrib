@@ -25,6 +25,7 @@
 
 //Include some libs as C files into this file
 #include "natlib/util.c"
+#include "natlib/svcd.c"
 
 ////////////////// BEGIN FUNCTIONS /////////////////////////////
 
@@ -176,6 +177,7 @@ const LUA_REG_TYPE contrib_native_map[] =
     { LSTRKEY( "fourth_root"), LFUNCVAL ( contrib_fourth_root_m1000 ) },
     { LSTRKEY( "run_foobar"), LFUNCVAL ( contrib_run_foobar ) },
     { LSTRKEY( "makecounter"), LFUNCVAL ( contrib_makecounter ) },
+    { LSTRKEY( "subdispatch"), LFUNCVAL ( SVCD_subdispatch ) },
 
     /* Constants for the Temp sensor. */
     // -- Register address --
