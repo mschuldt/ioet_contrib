@@ -38,7 +38,7 @@ SVCD.init("lame timer app",
 				function (payload, source_ip, source_port)
 				   cord.new(function ()
 					       local arr = storm.array.fromstr(payload)
-					       time = bit.lshift(arr:get(1), 8) + arr:get(2)
+					       time = arr:get_as(storm.array.UINT16, 1)
 					       print("alarm set for "..time.." seconds from now")
 					    end)
 				end)
