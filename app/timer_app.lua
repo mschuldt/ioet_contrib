@@ -2,37 +2,28 @@ require("svcd")
 require("cord")
 sh = require("stormsh")
 
-SVCD.init("boss", function()
+local SERVICE = 0x4C0F
+local ATTR = 0x4C0F
 
-SVCD.add_service(0x4C0F)
-SVCD.add_attribute(0x4C0F,0x4C0F, function (payload, source_ip, source_port)
-		      cord.new (function ()
-				   print("payload = " .. payload)
-				   local j = storm.array.fromstr(payload)
-				   print("j:get(1) = " .. j:get(1))
-				   print("get_as = " .. j:get_as(storm.array.UINT16, 0))
-				   print("-->" .. bit.lshift(j:get(1), 8) + j:get(2))
-				end) end)
-end)
---[[
-SVCD.add_service("service2")
-SVCD.add_attribute("service2","temp", function() print("available attribute") end)
+function ring_alarm()
+   print("***RING RING DING DING***")
+end
 
-SVCD.add_service("service3")
-SVCD.add_attribute("service3","temp", function() print("available attribute") end)
+SVCD.init("lame timer app",
+	  function()
+	     SVCD.add_service(SERVICE)
+	     SVCD.add_attribute(SERVICE, 
+				ATTR, 
+				function (payload, source_ip, source_port)
+				   cord.new (function ()
+						local arr = storm.array.fromstr(payload)
+						local time = bit.lshift(arr:get(1), 8) + arr:get(2)
+						print("setting time for "..time.." seconds from now")
+						storm.os.invokeLater(time*storm.os.SECOND, ring_alarm)
+					     end)
+				end)
+	  end)
 
-SVCD.add_service("service4")
-SVCD.add_attribute("service4","temp", function() print("available attribute") end)
-
-SVCD.add_service("service5")
-SVCD.add_attribute("service5","temp", function() print("available attribute") end)
---]]
-
---[[
-storm.os.invokePeriodically(
-  5*storm.os.SECOND,
-  function() print("subscribing") SVCD.subscribe("fe80::212:6d02:0:3039", 12, 1, function() print("notified") end) end)
-]]--
 sh.start()
 
 cord.enter_loop()
