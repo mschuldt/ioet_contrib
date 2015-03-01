@@ -198,12 +198,12 @@ static int svcd_init( lua_State *L )
 static int svcd_subdispatch(lua_State *L) {
   //local parr = storm.array.fromstr(pay)
   size_t len;
-  char *parr = lua_tolstring(L, 1, &len);
-  char* srcip = lua_tostring(L, 2); //? what type is the ip?
-  int strcport = lua_tointeger(L, 3);
+  uint8_t *parr __attribute__((aligned(2))) = lua_tolstring(L, 1, &len);
+  uint8_t *srcip = lua_tostring(L, 2);
+  uint32_t strcport = lua_tointeger(L, 3);
 
   //local cmd = parr:get(1);
-  char cmd = parr[0];
+  uint8_t cmd = parr[0];
   //local svc_id = parr:get_as(storm.array.UINT16,1);
   int16_t svc_id = *(int16_t*)(parr+1);
   //local attr_id = parr:get_as(storm.array.UINT16,3);
