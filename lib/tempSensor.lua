@@ -20,7 +20,8 @@ local TEMP = {}
 function TEMP:new()
    local obj = {port=storm.i2c.INT, 
                 addr = 0x80, 
-                reg=REG:new(storm.i2c.INT, 0x80)}
+                --reg=REG:new(storm.i2c.INT, 0x80)}
+		reg=storm.n.reg_new(storm.i2c.INT, 0x80, "YESYES")}
    setmetatable(obj, self)
    self.__index = self
    return obj
@@ -37,8 +38,9 @@ end
 --  0.25/s : 0x0800
 -- Enable data ready pin: 0x0100
 function TEMP:init()
-    self.reg:w(storm.n.TMP006_CONFIG, {0x00 + 0x70 + 0x01, 0x00})
-    return true
+   print("TEMP:init")
+   self.reg:w(storm.n.TMP006_CONFIG, {0x00 + 0x70 + 0x01, 0x00})
+   return true
 end
 
 -- Reset the temp sensor by setting CONFIG register to 0x8000
@@ -50,6 +52,7 @@ end
 
 --Read ambient temperature
 function TEMP:getTemp()
+   print("TEMP:getTemp")
     local result = self.reg:r(storm.n.TMP006_LOCAL_TEMP, 2)
     --Converting temperature into Celsius (each LSB = 1/32 Deg. Celsius)
     local temperature = bit.rshift(result:get_as(storm.array.INT16_BE, 0), 2) / 32
