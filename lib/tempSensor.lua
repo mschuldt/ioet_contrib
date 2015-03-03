@@ -64,7 +64,7 @@ end
 -- http://www.ti.com/lit/ug/sbou107/sbou107.pdf
 --   page 9: ir temp calculations
 -- http://www.ti.com.cn/cn/lit/ds/sbos518d/sbos518d.pdf
---   page 19 http://www.ti.com.cn/cn/lit/ds/sbos518d/sbos518d.pdf
+--   page 19: i2c registers
 --   page 12: ir temp calculations
 -- source code for ir temp calculation:
 --   http://processors.wiki.ti.com/index.php/SensorTag_User_Guide#IR_Temperature_Sensor
