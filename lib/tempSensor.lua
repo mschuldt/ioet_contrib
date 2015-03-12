@@ -52,8 +52,7 @@ end
 function TEMP:getTemp()
     local result = self.reg:r(storm.n.TMP006_LOCAL_TEMP, 2)
     --Converting temperature into Celsius (each LSB = 1/32 Deg. Celsius)
-    local temperature = bit.rshift(result:get_as(storm.array.INT16_BE, 0), 2) / 32
-    return temperature
+    return result:get_as(storm.array.INT16_BE, 0) / 128
 end
 
 
