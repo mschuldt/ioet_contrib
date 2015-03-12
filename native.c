@@ -171,6 +171,40 @@ static int contrib_helloX_tail(lua_State *L)
     }
 }
 
+
+// Conversion algorithm for target temperature
+int c_TMP006_ir_calc(int16_t voltage, int16_t ambient)
+{
+  //-- calculate target temperature [°C] -
+  double Vobj2 = (double)voltage;
+  Vobj2 *= 0.00000015625;
+
+  double Tdie2 = ambient + 273.15;
+  const double S0 = 6.4E-14;            // Calibration factor
+
+  const double a1 = 1.75E-3;
+  const double a2 = -1.678E-5;
+  const double b0 = -2.94E-5;
+  const double b1 = -5.7E-7;
+  const double b2 = 4.63E-9;
+  const double c2 = 13.4;
+  const double Tref = 298.15;
+  double S = S0*(1+a1*(Tdie2 - Tref)+a2*pow((Tdie2 - Tref),2));
+  double Vos = b0 + b1*(Tdie2 - Tref) + b2*pow((Tdie2 - Tref),2);
+  double fObj = (Vobj2 - Vos) + c2*pow((Vobj2 - Vos),2);
+  double tObj = pow(pow(Tdie2,4) + (fObj/S),.25);
+  tObj = (tObj - 273.15);
+
+  return (int) tObj;
+}
+
+int TMP006_ir_calc(lua_State *L){
+  int voltage = lua_tointeger(L, 1);
+  int ambient = lua_tointeger(L, 2);
+  lua_pushnumber(L, c_TMP006_ir_calc(voltage, ambient));
+  return 1;
+}
+
 ////////////////// BEGIN MODULE MAP /////////////////////////////
 const LUA_REG_TYPE contrib_native_map[] =
 {
@@ -183,7 +217,8 @@ const LUA_REG_TYPE contrib_native_map[] =
     SVCD_SYMBOLS
     ADCIFE_SYMBOLS
 
-    /* Constants for the Temp sensor. */
+    /* Functions and constants for the Temp sensor. */
+    { LSTRKEY( "TMP006_ir_calc" ), LFUNCVAL(TMP006_ir_calc)},
     // -- Register address --
     { LSTRKEY( "TMP006_VOLTAGE" ), LNUMVAL(0x00)},
     { LSTRKEY( "TMP006_LOCAL_TEMP" ), LNUMVAL(0x01)},

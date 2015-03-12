@@ -56,6 +56,25 @@ function TEMP:getTemp()
     return temperature
 end
 
+
+--Read IR temperature
+--
+--References:
+-- http://www.ti.com/lit/ug/sbou107/sbou107.pdf
+--   page 9: ir temp calculations
+-- http://www.ti.com.cn/cn/lit/ds/sbos518d/sbos518d.pdf
+--   page 19 http://www.ti.com.cn/cn/lit/ds/sbos518d/sbos518d.pdf
+--   page 12: ir temp calculations
+-- source code for ir temp calculation:
+--   http://processors.wiki.ti.com/index.php/SensorTag_User_Guide#IR_Temperature_Sensor
+function TEMP:getIRTemp()
+   local v_reg = self.reg:r(storm.n.TMP006_VOLTAGE, 2)
+   local voltage = v_reg:get_as(storm.array.INT16_BE, 0)
+   local a_reg = self.reg:r(storm.n.TMP006_LOCAL_TEMP, 2)
+   local ambient = a_reg:get_as(storm.array.INT16_BE, 0)/128
+   return storm.n.TMP006_ir_calc(voltage, ambient)
+end
+
 -- Read configuration register
 function TEMP:getConfig()
     local result = self.reg:r(storm.n.TMP006_CONFIG, 2)
